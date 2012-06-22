@@ -28,7 +28,7 @@ module Finity
     # methods for querying the current state and initiating transitions.
     def initialize klass, options = {}, &block
       @klass, @states, @events, @init = klass, {}, {}, options.delete(:init)
-      @klass.send :define_method, :state! do |*args|
+      @klass.send :define_method, :event! do |*args|
         klass.machine.update self, *args
       end
       @klass.send :define_method, :state? do |*args|
