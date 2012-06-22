@@ -8,7 +8,7 @@ a great state machine implementation tightly integrated with ActiveRecord by Jak
 
 The goal of **Finity** is to provide a state machine implementation which is as slim and fast as possible
 while maintaining a beautiful and readable syntax. If you need ActiveModel/ActiveRecord integration,
-*transitions* is your weapon of choice. However, if you only need a plain state machine implementation
+[transitions][] is your weapon of choice. However, if you only need a plain state machine implementation
 which is optimized for readability and efficiency, give **Finity** a spin.
 
 ## Installation
@@ -32,7 +32,7 @@ and define some transitions. For example, consider a state machine modelling the
 the contents of a file:
 
 ```
-class Example
+class Readfile
   include Finity
 
   finity :init => :opened do
@@ -40,24 +40,24 @@ class Example
     state :opened,
       :enter => proc { @file = File.open '...' }
 
-    state :reading
+    state :reading,
       :enter => proc { process @file.readline }
 
-    state :closed
+    state :closed,
       :enter => proc { @file.close '...' }
 
     event :read do
       transitions :from => [:opened, :reading], :to => :reading,
         :if => proc { not @file.eof? }
-        :do => proc { log 'reading next line...' }
+        :do => proc { log 'Reading next line of file' }
 
       transitions :from => [:opened, :reading], :to => :reading,
-        :do => proc { log 'reached end of file...' }
+        :do => proc { log 'Reached end of file' }
     end
 
     event :close do
       transitions :from => [:opened, :reading], :to => :closed,
-        :do => proc { log 'closing...' }
+        :do => proc { log 'Closing file handle' }
     end
   end
 end
@@ -69,7 +69,7 @@ A state is defined by its name and can define transition functions upon entering
 These functions can be either referenced as Symbols, Strings, Procs or Lambda:
 
 ```
-state :some_state_,
+state :some_state,
   :enter => proc { do_something and some_other_thing },
   :leave => :execute_leave_action!
 ```
@@ -97,7 +97,7 @@ object. Many other state machine implementations define one method for each even
 however, **Finity** tries to be as minimally invasive as possible:
 
 ```
-  object = Example.new
+  object = SomeClassIncludingFinity.new
   if object.state? :some_state
     object.event! :some_event
   end
