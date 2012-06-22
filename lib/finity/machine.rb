@@ -22,17 +22,17 @@
 
 module Finity
   class Machine
-    attr_accessor :states, :current
+    attr_accessor :states, :events, :current
 
     # Initialize a new state machine within the provided class and define
     # methods for querying the current state and initiating transitions.
-    def initialize klass, name, options = {}, &block
+    def initialize klass, options = {}, &block
       @klass, @states, @events, @init = klass, {}, {}, options.delete(:init)
       @klass.send :define_method, :state! do |*args|
-        klass.machines[name].update self, *args
+        klass.machine.update self, *args
       end
       @klass.send :define_method, :state? do |*args|
-        klass.machines[name].current.name.eql? *args
+        klass.machine.current.name.eql? *args
       end
       instance_eval &block if block_given?
     end
@@ -58,7 +58,7 @@ module Finity
       @current ||= @states[init]
       if (state = @events[event].handle object, @current)
         if @states[state].nil?
-          raise InvalidTransition, "Invalid state '#{state}'"
+          raise InvalidState, "Invalid state '#{state}'"
         end
         @current.leave object
         @current = @states[state]

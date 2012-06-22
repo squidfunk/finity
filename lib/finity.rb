@@ -27,25 +27,34 @@ require 'finity/transition'
 require 'finity/version'
 
 module Finity
-  class InvalidCallback   < StandardError; end
-  class MissingCallback   < StandardError; end
-  class InvalidTransition < StandardError; end
+  class InvalidCallback < StandardError; end
+  class MissingCallback < StandardError; end
+  class InvalidState    < StandardError; end
 
   # Class methods to be injected into the including class upon inclusion.
   module ClassMethods
-    attr_accessor :machines
+    attr_accessor :machine
 
     # When inheriting this module, pass the registered machines to the
     # inheriting class after executing potential parent inheritance logic.
     def inherited klass
-      super and klass.machines = machines
+      super and klass.machine = machine
     end
 
-    # Instantiate a new (optionally named) state machine by accepting a block
-    # with state and event (and subsequent transition) definitions.
-    def finity name = :default, options = {}, &block
-      @machines ||= {}
-      @machines[name] = Machine.new self, name, options, &block
+    # Instantiate a new state machine for the including class by accepting a
+    # block with state and event (and subsequent transition) definitions.
+    def finity options = {}, &block
+      @machine = Machine.new self, options, &block
+    end
+
+    # Return the names of all registered states.
+    def states
+      @machine.states.map { |name, _| name }
+    end
+
+    # Return the names of all registered events.
+    def events
+      @machine.events.map { |name, _| name }
     end
   end
 
