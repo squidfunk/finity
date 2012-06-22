@@ -36,7 +36,7 @@ module Finity
     # Check, whether the current transition is allowed and execute it.
     def handle object
       if @if.nil? or execute object, @if
-        execute object, @do
+        execute object, @do unless @do.nil?
         @to
       end
     end
