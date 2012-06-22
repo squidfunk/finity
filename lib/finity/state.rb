@@ -32,12 +32,12 @@ module Finity
 
     # Executed when the current state is entered.
     def enter object
-      execute object, @enter
+      execute object, @enter unless @enter.nil?
     end
 
     # Executed when the current state is left.
     def leave object
-      execute object, @leave
+      execute object, @leave unless @leave.nil?
     end
 
     private
