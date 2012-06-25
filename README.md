@@ -48,7 +48,7 @@ class Readfile
 
     event :read do
       transitions :from => [:opened, :reading], :to => :reading,
-        :if => proc { not @file.eof? }
+        :if => proc { not @file.eof? },
         :do => proc { log 'Reading next line of file' }
 
       transitions :from => [:opened, :reading], :to => :reading,
@@ -97,10 +97,10 @@ object. Many other state machine implementations define one method for each even
 however, **Finity** tries to be as minimally invasive as possible:
 
 ```
-  object = SomeClassIncludingFinity.new
-  if object.state? :some_state
-    object.event! :some_event
-  end
+object = SomeClassIncludingFinity.new
+if object.state? :some_state
+  object.event! :some_event
+end
 ```
 
 [transitions]: https://github.com/troessner/transitions

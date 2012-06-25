@@ -27,7 +27,7 @@ module Finity
     # Initialize a new state machine within the provided class and define
     # methods for querying the current state and initiating transitions.
     def initialize klass, options = {}, &block
-      @klass, @states, @events, @init = klass, {}, {}, options.delete(:init)
+      @klass, @states, @events, @inital = klass, {}, {}, options.delete(:inital)
       @klass.send :define_method, :event! do |*args|
         klass.machine.update self, *args
       end
@@ -35,11 +35,12 @@ module Finity
         klass.machine.current.name.eql? *args
       end
       instance_eval &block if block_given?
+      @current = inital
     end
 
     # Return the name of the initial state.
-    def init
-      @init ||= @states.keys.first unless @states.first.nil?
+    def inital
+      @inital ||= @states.keys.first unless @states.first.nil?
     end
 
     # Register a state.
@@ -55,14 +56,14 @@ module Finity
     # An event occured, so update the state machine by evaluating the
     # transition functions and notify the left and entered state.
     def update object, event
-      @current ||= @states[init]
-      if (state = @events[event].handle object, @current)
+      current ||= @states[@current || inital]
+      if state = @events[event].handle(object, current)
         if @states[state].nil?
           raise InvalidState, "Invalid state '#{state}'"
         end
-        @current.leave object
-        @current = @states[state]
-        @current.enter object
+        current.leave object
+        current = @states[@current = state]
+        current.enter object
       end
     end
   end

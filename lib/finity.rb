@@ -35,12 +35,6 @@ module Finity
   module ClassMethods
     attr_accessor :machine
 
-    # When inheriting this module, pass the registered machines to the
-    # inheriting class after executing potential parent inheritance logic.
-    def inherited klass
-      super and klass.machine = machine
-    end
-
     # Instantiate a new state machine for the including class by accepting a
     # block with state and event (and subsequent transition) definitions.
     def finity options = {}, &block
