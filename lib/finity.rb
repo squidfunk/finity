@@ -33,22 +33,21 @@ module Finity
 
   # Class methods to be injected into the including class upon inclusion.
   module ClassMethods
-    attr_accessor :machine
 
     # Instantiate a new state machine for the including class by accepting a
     # block with state and event (and subsequent transition) definitions.
     def finity options = {}, &block
-      @machine = Machine.new self, options, &block
+      @finity ||= Machine.new self, options, &block
     end
 
     # Return the names of all registered states.
     def states
-      @machine.states.map { |name, _| name }
+      @finity.states.map { |name, _| name }
     end
 
     # Return the names of all registered events.
     def events
-      @machine.events.map { |name, _| name }
+      @finity.events.map { |name, _| name }
     end
   end
 

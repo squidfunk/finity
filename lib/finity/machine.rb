@@ -22,25 +22,35 @@
 
 module Finity
   class Machine
-    attr_accessor :states, :events, :current
+    attr_accessor :states, :events
 
     # Initialize a new state machine within the provided class and define
     # methods for querying the current state and initiating transitions.
+    # The current state must be bound to the including instance, otherwise
+    # there may be problems due to caching between requests.
     def initialize klass, options = {}, &block
-      @klass, @states, @events, @inital = klass, {}, {}, options.delete(:inital)
+      @klass, @states, @events = klass, {}, {}
+      instance_eval &block if block_given?
+      @initial = current = options.delete(:initial) || initial
+      @klass.send :define_method, :current do |*args|
+        unless self.instance_variable_defined? :@current
+          self.instance_variable_set :@current, current
+        end
+        self.instance_variable_get :@current
+      end
       @klass.send :define_method, :event! do |*args|
-        klass.machine.update self, *args
+        self.instance_variable_set :@current, (
+          klass.finity.update self, self.current, *args
+        )
       end
       @klass.send :define_method, :state? do |*args|
-        klass.machine.current.name.eql? *args
+        klass.finity.current.name.eql? *args
       end
-      instance_eval &block if block_given?
-      @current = inital
     end
 
     # Return the name of the initial state.
-    def inital
-      @inital ||= @states.keys.first unless @states.first.nil?
+    def initial
+      @initial ||= @states.keys.first unless @states.first.nil?
     end
 
     # Register a state.
@@ -55,16 +65,17 @@ module Finity
 
     # An event occured, so update the state machine by evaluating the
     # transition functions and notify the left and entered state.
-    def update object, event
-      current ||= @states[@current || inital]
-      if state = @events[event].handle(object, current)
+    def update object, current, event
+      now ||= @states[current]
+      if state = @events[event].handle(object, now)
         if @states[state].nil?
-          raise InvalidState, "Invalid state '#{state}'"
+          raise InvalidState, "Invalid state #{state}"
         end
-        current.leave object
-        current = @states[@current = state]
-        current.enter object
+        now.leave object
+        now = @states[current = state]
+        now.enter object
       end
+      current
     end
   end
 end
