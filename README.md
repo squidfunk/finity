@@ -17,7 +17,7 @@ optimized for readability and efficiency, give **Finity** a spin.
 If you use Rails, include this into your Gemfile and run `bundle install` via
 command line:
 
-```
+``` ruby
 gem 'finity'
 ```
 
@@ -35,7 +35,7 @@ have to do is to include it and define some transitions. For example, consider
 a state machine modelling the different states of reading the contents of a
 file:
 
-```
+``` ruby
 class Readfile
   include Finity
 
@@ -73,7 +73,7 @@ A state is defined by its name and can define transition functions upon
 entering and leaving the state. These functions can be either referenced as
 Symbols, Strings, Procs or Lambda:
 
-```
+``` ruby
 state :some_state,
   :enter => proc { do_something and some_other_thing },
   :leave => :execute_leave_action!
@@ -86,7 +86,7 @@ transitions from several states to other states. The transitions are evaluated
 in the order they are defined. If a valid transition is found, the execution is
 stopped and the transition performed:
 
-```
+``` ruby
 event :some_event do
   transitions :from => [:some_state, :another_state], :to => :another_state,
     :if => proc { is_some_condition_true? },
@@ -103,7 +103,7 @@ method `event!` which is defined for the including object. Many other state
 machine implementations define one method for each event and for each state,
 however, **Finity** tries to be as minimally invasive as possible:
 
-```
+``` ruby
 object = SomeClassIncludingFinity.new
 if object.state? :some_state
   object.event! :some_event
