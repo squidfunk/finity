@@ -64,16 +64,19 @@ module Finity
     end
 
     # An event occured, so update the state machine by evaluating the
-    # transition functions and notify the left and entered state.
+    # transition functions and notify the left and entered state, but only if
+    # the event leads to a transition that triggers a state change.
     def update object, current, event
       now ||= @states[current]
       if state = @events[event].handle(object, now)
         if @states[state].nil?
           raise InvalidState, "Invalid state #{state}"
         end
-        now.leave object
-        now = @states[current = state]
-        now.enter object
+        unless state.eql? current
+          now.leave object
+          now = @states[current = state]
+          now.enter object
+        end
       end
       current
     end
