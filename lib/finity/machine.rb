@@ -72,7 +72,9 @@ module Finity
         if @states[state].nil?
           raise InvalidState, "Invalid state #{state}"
         end
-        unless state.eql? current
+        if state.eql? current
+          now.cycle object
+        else
           now.leave object
           now = @states[current = state]
           now.enter object

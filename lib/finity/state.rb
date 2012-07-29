@@ -26,13 +26,18 @@ module Finity
 
     # Initialize a new state for the state machine with callbacks.
     def initialize name, options = {}
-      @name, @enter, @leave = name, *options.values_at(:enter, :leave)
+      @name, @enter, @cycle, @leave = name, *options.values_at(:enter, :cycle, :leave)
       instance_eval &block if block_given?
     end
 
     # Executed when the current state is entered.
     def enter object
       execute object, @enter unless @enter.nil?
+    end
+
+    # Executed if a state is kept during a cycle.
+    def cycle object
+      execute object, @cycle unless @cycle.nil?
     end
 
     # Executed when the current state is left.
