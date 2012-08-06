@@ -8,9 +8,8 @@ Gem::Specification.new do |s|
   s.authors     = ['Martin Donath']
   s.email       = 'md@struct.cc'
   s.homepage    = 'http://github.com/squidfunk/finity'
-  s.summary     = 'Slim and more readable state machine for Ruby'
-  s.description = 'Extremly lightweight state machine implementation with an easily readable syntax, ' +
-                  'which is essential if you have tens or hundreds of transitions.'
+  s.summary     = 'Slim and readable state machine for Ruby'
+  s.description = 'Extremly lightweight state machine implementation with an easily readable syntax'
 
   s.required_rubygems_version = '>= 1.3.6'
   s.add_development_dependency 'bundler', '~> 1'
