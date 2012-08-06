@@ -44,7 +44,7 @@ module Finity
         )
       end
       @klass.send :define_method, :state? do |*args|
-        klass.finity.current.name.eql? *args
+        self.current.eql? *args
       end
     end
 
@@ -53,14 +53,16 @@ module Finity
       @initial ||= @states.keys.first unless @states.first.nil?
     end
 
-    # Register a state.
+    # Register a state, or a set of states.
     def state name, options = {}
-      @states[name] = State.new name, options
+      name.is_a?(Array) ? name.each { |value| state value, options } :
+        @states[name] = State.new(name, options)
     end
 
     # Register an event and evaluate the block for transitions.
     def event name, options = {}, &block
-      @events[name] = Event.new name, options, &block
+      name.is_a?(Array) ? name.each { |value| event value, options, &block } :
+        @events[name] = Event.new(name, options, &block)
     end
 
     # An event occured, so update the state machine by evaluating the
