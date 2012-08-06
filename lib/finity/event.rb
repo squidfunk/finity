@@ -45,7 +45,8 @@ module Finity
       @transitions[state.name].find do |transition|
         name = transition.handle object
         return name unless name.nil?
-      end
+      end rescue
+        raise InvalidState, "No handler for :#{name} from :#{state.name}"
     end
   end
 end
