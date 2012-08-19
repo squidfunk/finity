@@ -42,11 +42,12 @@ module Finity
 
     # Handle the current state and execute the first allowed transition.
     def handle object, state
+      raise InvalidState, "No match for (:#{state.name}) on (:#{name})" unless
+        @transitions.key? state.name
       @transitions[state.name].find do |transition|
         name = transition.handle object
         return name unless name.nil?
-      end rescue
-        raise InvalidState, "No handler for :#{name} from :#{state.name}"
+      end
     end
   end
 end
