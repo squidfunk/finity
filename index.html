@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Finity by squidfunk</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Finity</h1>
+        <h2>Slim and readable state machine for Ruby</h2>
+        <a href="https://github.com/squidfunk/finity" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a name="finity" class="anchor" href="#finity"><span class="octicon octicon-link"></span></a>Finity</h1>
+
+<p><strong>Finity</strong> tries to be an extremly lightweight state machine implementation
+with an easily readable syntax. At the time of this writing, <strong>Finity</strong> is
+comprised of only ~160 lines of code. It is inspired by <a href="https://github.com/troessner/transitions">transitions</a>, a
+great state machine implementation tightly integrated with ActiveRecord by
+Jakub Kuźma and Timo Rößner.</p>
+
+<p>The aim of <strong>Finity</strong> is to provide a state machine implementation which is as
+slim and fast as possible while maintaining a beautiful and readable syntax.
+However, if you need ActiveModel/ActiveRecord integration, <a href="https://github.com/troessner/transitions">transitions</a> may
+be your weapon of choice.</p>
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>If you use Rails, include this into your Gemfile and run <code>bundle install</code> via
+command line:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="n">gem</span> <span class="s1">'finity'</span>
+</pre></div>
+
+<p>Otherwise you can install <strong>Finity</strong> with <code>gem</code> via command
+line:</p>
+
+<pre><code>gem install finity
+</code></pre>
+
+<h2>
+<a name="example" class="anchor" href="#example"><span class="octicon octicon-link"></span></a>Example</h2>
+
+<p><strong>Finity</strong> can transform any class into a state machine. For example, consider
+a state machine modelling an <em>elevator</em> in a building with 3 floors: <code>ground</code>,
+<code>first</code> and <code>second</code>. The <em>elevator</em> can perform the following actions:</p>
+
+<ul>
+<li>On floors <code>ground</code> and <code>first</code>, it can go <code>up</code> to the floor above.</li>
+<li>On floors <code>first</code> and <code>second</code>, it can go <code>down</code> to the floor below.</li>
+</ul><p><em>Leaving</em> (<em>entering</em>) a floor, the doors need to <code>close</code> (<code>open</code>). Also, when
+entering a floor or pressing <code>down</code> (<code>up</code>) on the <code>ground</code> (<code>second</code>) floor, a
+bell should <code>ring</code>. The following class models the <em>elevator</em>:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="k">class</span> <span class="nc">Elevator</span>
+  <span class="kp">include</span> <span class="no">Finity</span>
+
+  <span class="n">finity</span> <span class="ss">:init</span> <span class="o">=&gt;</span> <span class="ss">:ground</span> <span class="k">do</span>
+
+    <span class="n">state</span> <span class="ss">:ground</span><span class="p">,</span>
+      <span class="ss">:enter</span> <span class="o">=&gt;</span> <span class="ss">:open</span><span class="p">,</span>
+      <span class="ss">:cycle</span> <span class="o">=&gt;</span> <span class="ss">:ring</span><span class="p">,</span>
+      <span class="ss">:leave</span> <span class="o">=&gt;</span> <span class="ss">:close</span>
+
+    <span class="n">state</span> <span class="ss">:first</span><span class="p">,</span>
+      <span class="ss">:enter</span> <span class="o">=&gt;</span> <span class="ss">:open</span><span class="p">,</span>
+      <span class="ss">:leave</span> <span class="o">=&gt;</span> <span class="ss">:close</span>
+
+    <span class="n">state</span> <span class="ss">:second</span><span class="p">,</span>
+      <span class="ss">:enter</span> <span class="o">=&gt;</span> <span class="ss">:open</span><span class="p">,</span>
+      <span class="ss">:cycle</span> <span class="o">=&gt;</span> <span class="ss">:ring</span><span class="p">,</span>
+      <span class="ss">:leave</span> <span class="o">=&gt;</span> <span class="ss">:close</span>
+
+    <span class="n">event</span> <span class="ss">:up</span> <span class="k">do</span>
+      <span class="n">transitions</span> <span class="ss">:from</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:ground</span><span class="o">]</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:first</span>
+      <span class="n">transitions</span> <span class="ss">:from</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:first</span><span class="p">,</span> <span class="ss">:second</span><span class="o">]</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:second</span>
+    <span class="k">end</span>
+
+    <span class="n">event</span> <span class="ss">:down</span> <span class="k">do</span>
+      <span class="n">transitions</span> <span class="ss">:from</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:ground</span><span class="p">,</span> <span class="ss">:first</span><span class="o">]</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:ground</span>
+      <span class="n">transitions</span> <span class="ss">:from</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:second</span><span class="o">]</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:first</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">up</span>
+    <span class="n">event!</span> <span class="ss">:up</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">down</span>
+    <span class="n">event!</span> <span class="ss">:down</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+
+  <span class="k">def</span> <span class="nf">open</span>
+    <span class="n">ring</span> <span class="ow">and</span> <span class="nb">puts</span> <span class="s2">"Doors opening on the </span><span class="si">#{</span><span class="vi">@current</span><span class="si">}</span><span class="s2"> floor."</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">ring</span>
+    <span class="nb">puts</span> <span class="s2">"Ring!"</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">close</span>
+    <span class="nb">puts</span> <span class="s2">"Doors closing..."</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>While the different floors are modelled as <em>states</em>, the actions <code>up</code> and
+<code>down</code> are modelled as <em>events</em>. The <em>elevator</em> is initialized on the <code>ground</code>
+floor, which in this case is redundant, since, by default, <strong>Finity</strong> treats
+the first state as the initial state. The instance variable <code>@current</code> holds
+the current floor/state. The methods which are invoked upon entering, leaving
+or cycling (staying in a state) are declared private, as they should not be
+accessible from the outside. Only <code>up</code> and <code>down</code> are public.</p>
+
+<p>We can now create an instance of the <em>elevator</em> and play with it:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="n">elevator</span> <span class="o">=</span> <span class="no">Elevator</span><span class="o">.</span><span class="n">new</span>
+<span class="n">elevator</span><span class="o">.</span><span class="n">down</span> <span class="c1"># =&gt; Ring!</span>
+<span class="n">elevator</span><span class="o">.</span><span class="n">up</span>   <span class="c1"># =&gt; Doors closing...</span>
+              <span class="c1"># =&gt; Ring!</span>
+              <span class="c1"># =&gt; Doors opening on the first floor.</span>
+<span class="n">elevator</span><span class="o">.</span><span class="n">up</span>   <span class="c1"># =&gt; Doors closing...</span>
+              <span class="c1"># =&gt; Ring!</span>
+              <span class="c1"># =&gt; Doors opening on the second floor.</span>
+<span class="n">elevator</span><span class="o">.</span><span class="n">up</span>   <span class="c1"># =&gt; Ring!</span>
+<span class="n">elevator</span><span class="o">.</span><span class="n">down</span> <span class="c1"># =&gt; Doors closing.</span>
+              <span class="c1"># =&gt; Ring!</span>
+              <span class="c1"># =&gt; Doors opening on the first floor.</span>
+</pre></div>
+
+<p>While this example is very basic, it clearly shows the power of finite state
+machines to model complex systems with a finite set of states and events
+triggering transitions between them.</p>
+
+<h2>
+<a name="states-events-and-transitions" class="anchor" href="#states-events-and-transitions"><span class="octicon octicon-link"></span></a>States, Events and Transitions</h2>
+
+<h3>
+<a name="states" class="anchor" href="#states"><span class="octicon octicon-link"></span></a>States</h3>
+
+<p>A state is uniquely identified by its name and <em>can</em> define functions to be
+executed upon entering, leaving and cycling (staying inside). These functions
+can be referenced as <em>Symbols</em>, <em>Strings</em>, <em>Procs</em> or <em>Lambdas</em>:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="n">state</span> <span class="ss">:ground</span><span class="p">,</span>
+  <span class="ss">:enter</span> <span class="o">=&gt;</span> <span class="ss">:open</span><span class="p">,</span>                           <span class="c1"># Symbols must reference (private) methods</span>
+  <span class="ss">:cycle</span> <span class="o">=&gt;</span> <span class="nb">proc</span> <span class="p">{</span> <span class="n">ring</span> <span class="p">},</span>                   <span class="c1"># Procs are evaluated in the context of the instance</span>
+  <span class="ss">:leave</span> <span class="o">=&gt;</span> <span class="o">-&gt;</span> <span class="n">elevator</span> <span class="p">{</span> <span class="n">elevator</span><span class="o">.</span><span class="n">close</span> <span class="p">}</span>   <span class="c1"># Lambdas are provided with the instance as an argument</span>
+</pre></div>
+
+<p>If there are several states with the same set of transition functions, they can
+be defined in a single run. Considering our example, the <code>ground</code> and the
+<code>second</code> floor bear the same set of actions, so we can combine them:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="n">state</span> <span class="o">[</span><span class="ss">:ground</span><span class="p">,</span> <span class="ss">:second</span><span class="o">]</span><span class="p">,</span>
+  <span class="ss">:enter</span> <span class="o">=&gt;</span> <span class="ss">:open</span><span class="p">,</span>
+  <span class="ss">:cycle</span> <span class="o">=&gt;</span> <span class="ss">:ring</span><span class="p">,</span>
+  <span class="ss">:leave</span> <span class="o">=&gt;</span> <span class="ss">:close</span>
+</pre></div>
+
+<h3>
+<a name="events-and-transitions" class="anchor" href="#events-and-transitions"><span class="octicon octicon-link"></span></a>Events and Transitions</h3>
+
+<p>Events are like states identified by their name and may define an arbitrary
+number of transitions between different states. The transitions are evaluated
+in the order in which they are defined. A transition is executed, if it is found
+to be valid, which means that it contains the current state in <code>from</code> and the
+<code>if</code>-guard, if defined, returns <code>true</code>. If no valid transition is found for a
+given event, <strong>Finity</strong> will raise an error. Starting with our example, the
+minimal information needed for the <code>up</code>-event is:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="n">event</span> <span class="ss">:up</span> <span class="k">do</span>
+  <span class="n">transitions</span> <span class="ss">:from</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:ground</span><span class="o">]</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:first</span>
+  <span class="n">transitions</span> <span class="ss">:from</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:first</span><span class="p">,</span> <span class="ss">:second</span><span class="o">]</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:second</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>Like for states, multiple events can be defined in a single run with the same
+set of transitions:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="n">event</span> <span class="o">[</span><span class="ss">:up</span><span class="p">,</span> <span class="ss">:down</span><span class="o">]</span> <span class="k">do</span>
+  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>In case of an event, we sometimes want to take different actions from the same
+state, so we need to specify <em>guards</em>. If a transition specifies a guard, it is
+only considered valid if the guard returns <code>true</code>. For example, if we want to
+deactivate the buttons when the elevator is <code>stuck</code>, we do the following:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="n">event</span> <span class="ss">:up</span> <span class="k">do</span>
+  <span class="n">transitions</span> <span class="ss">:from</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:ground</span><span class="o">]</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:first</span><span class="p">,</span>
+    <span class="ss">:if</span> <span class="o">=&gt;</span> <span class="ss">:not_stuck?</span>
+  <span class="n">transitions</span> <span class="ss">:from</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:first</span><span class="p">,</span> <span class="ss">:second</span><span class="o">]</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:second</span><span class="p">,</span>
+    <span class="ss">:if</span> <span class="o">=&gt;</span> <span class="ss">:not_stuck?</span>
+  <span class="n">transitions</span> <span class="ss">:from</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:ground</span><span class="p">,</span> <span class="ss">:first</span><span class="p">,</span> <span class="ss">:second</span><span class="p">,</span> <span class="ss">:stuck</span><span class="o">]</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:stuck</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>This implies, that we defined a new state called <code>stuck</code> and a method to
+determine whether the elevator is stuck at the moment. Unless <code>not_stuck?</code>
+returns <code>true</code>, the elevator will keep working as in our original example.
+Otherwise, only the last transition is valid and the elevator will enter
+the <code>stuck</code> state from any other state.</p>
+
+<p>Additionally, we can define functions to be executed for specific transitions
+only. This can be achieved with <code>do</code>:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="n">event</span> <span class="ss">:up</span> <span class="k">do</span>
+  <span class="n">transitions</span> <span class="ss">:from</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:ground</span><span class="o">]</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:first</span><span class="p">,</span>
+    <span class="ss">:if</span> <span class="o">=&gt;</span> <span class="ss">:not_stuck?</span>
+  <span class="n">transitions</span> <span class="ss">:from</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:first</span><span class="p">,</span> <span class="ss">:second</span><span class="o">]</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:second</span><span class="p">,</span>
+    <span class="ss">:if</span> <span class="o">=&gt;</span> <span class="ss">:not_stuck?</span>
+  <span class="n">transitions</span> <span class="ss">:from</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:ground</span><span class="p">,</span> <span class="ss">:first</span><span class="p">,</span> <span class="ss">:second</span><span class="p">,</span> <span class="ss">:stuck</span><span class="o">]</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:stuck</span><span class="p">,</span>
+    <span class="ss">:do</span> <span class="o">=&gt;</span> <span class="nb">proc</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s2">"The elevator is stuck"</span> <span class="p">}</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>Now, if the elevator is stuck, a message is displayed everytime a button is
+pushed. Like for states, all functions can be defined as <em>Symbols</em>, <em>Strings</em>,
+<em>Procs</em> or <em>Lambdas</em>.</p>
+
+<h3>
+<a name="definitions" class="anchor" href="#definitions"><span class="octicon octicon-link"></span></a>Definitions</h3>
+
+<p><strong>Finity</strong> defines two methods on the including instance:</p>
+
+<ul>
+<li>
+<code>state? name</code>: Returns <code>true</code> if the state machine is in state <code>name</code>.</li>
+<li>
+<code>event! name</code>: Triggers event <code>name</code>.</li>
+</ul><p>Those methods can also be accessed from the outside. The current state is held
+within the instance variable <code>@current</code>, contained in the including instance.</p>
+
+<h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>Copyright (c) 2012 Martin Donath</p>
+
+<p>Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation files
+(the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of the Software,
+and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/squidfunk/finity/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/squidfunk/finity/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/squidfunk/finity"></a> is maintained by <a href="https://github.com/squidfunk">squidfunk</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
